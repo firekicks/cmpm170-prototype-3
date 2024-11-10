@@ -1,15 +1,19 @@
 let config = {
     type: Phaser.CANVAS, 
-    width: 640, 
-    height: 480,
-    scene: [Menu, Play]
+    width: 715, 
+    height: 537,
+    // add in Menu scene later if needed
+    scene: [Title, Play],
+    audio: {
+        disableWebAudio: true // disable Web Audio to avoid autoplay issues
+    },
+    fps: {forceSetTimeOut: true, target: 60},
 }
 
 let game = new Phaser.Game(config);
 
-// set UI sizes
+// Set UI sizes
 let borderUISize = game.config.height / 15;
 let borderPadding = borderUISize / 3;
 
-// reserve keyboard variables
-let keyF, keyR, keyLEFT, keyRIGHT;
+// Set keyboard variables

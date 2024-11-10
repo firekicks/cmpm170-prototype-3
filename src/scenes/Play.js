@@ -4,137 +4,132 @@ class Play extends Phaser.Scene {
     }
     
     preload() {
-        // load images/tile sprites
-        this.load.image('rocket', './assets/rocket.png');
-        this.load.image('spaceship', './assets/spaceship.png');
-        this.load.image('starfield', './assets/starfield.png');
-        // load spritesheet
-        this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
-      }
+        // Load background and scanner images
+        this.load.image('background', './assets/background.jpg');
+        this.load.image('scanner', './assets/scanner.png');
+    }
 
     create() {
-        // place tile sprite
-        this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0);
-
-        // green UI background
-        this.add.rectangle(0, borderUISize + borderPadding, game.config.width, borderUISize * 2, 0x00FF00).setOrigin(0, 0);
-        
-        // white borders
-        this.add.rectangle(0, 0, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
-        this.add.rectangle(0, game.config.height - borderUISize, game.config.width, borderUISize, 0xFFFFFF).setOrigin(0, 0);
-        this.add.rectangle(0, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
-        this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
-        
-        // add rocket (p1)
-        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
-        
-        // add spaceships (x3)
-        this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
-        this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'spaceship', 0, 20).setOrigin(0,0);
-        this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
-        
-        // define keys
-        keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
-        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-        keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-        keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-        
-        // animation config
-        this.anims.create({
-            key: 'explode',
-            frames: this.anims.generateFrameNumbers('explosion', { 
-                start: 0, 
-                end: 9, 
-                first: 0
-            }),
-            frameRate: 30
+        // Add background image to the scene
+        const background = this.add.image(0, 0, 'background')
+            .setOrigin(0, 0)
+            .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
+    
+        // Add scanner image and make it smaller
+        this.scanner = this.add.image(this.sys.game.config.width / 2, this.sys.game.config.height / 2, 'scanner').setScale(0.2);
+        this.scanner.setInteractive();
+        this.input.setDraggable(this.scanner);
+    
+        // Enable dragging
+        this.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+            gameObject.x = dragX;
+            gameObject.y = dragY;
         });
-        
-        // initialize score
-        this.p1Score = 0;
-        
-        // display score
-        let scoreConfig = {
-            fontFamily: 'Courier',
-            fontSize: '28px',
-            backgroundColor: '#F3B141',
-            color: '#843605',
-            align: 'right',
-            padding: {
-            top: 5,
-            bottom: 5,
-            },
-            fixedWidth: 100
-        }
-        this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
-        
-        // GAME OVER flag
-        this.gameOver = false;
-        
-        // 60-second play clock
-        scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, '‘Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-        }, null, this);
-    }
-    update() {
-        // check key input for restart / menu
-        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
-            this.scene.restart();
-        }
-        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
-            this.scene.start("menuScene");
-        }
-        this.starfield.tilePositionX -= 4;  // update the tile sprite
+    
+        // Generate random positions for clues
+        this.clues = this.generateRandomClues(3); // Generate 3 clues
+        this.clues.forEach(clue => clue.setVisible(false));
 
-        if (!this.gameOver) {               
-            this.p1Rocket.update();         // update p1
-            this.ship01.update();           // update spaceships (x3)
-            this.ship02.update();
-            this.ship03.update();
-        }
-        // check collisions
-        if (this.checkCollision(this.p1Rocket, this.ship03)) {
-            this.p1Rocket.reset();
-            this.shipExplode(this.ship03);   
-        }
-        if (this.checkCollision(this.p1Rocket, this.ship02)) {
-            this.p1Rocket.reset();
-            this.shipExplode(this.ship02);
-        }
-        if (this.checkCollision(this.p1Rocket, this.ship01)) {
-            this.p1Rocket.reset();
-            this.shipExplode(this.ship01);
-        }
+        // Initialize score and timer
+        this.score = 0;
+        this.timeLeft = 30; // Set a 30-second timer
+        this.timerText = this.add.text(10, 10, `Time: ${this.timeLeft}`, { font: '20px Arial', fill: '#ffffff' });
+        this.scoreText = this.add.text(10, 40, `Score: ${this.score}`, { font: '20px Arial', fill: '#ffffff' });
+
+        // Timer event
+        this.startTimer();
     }
-    checkCollision(rocket, ship) {
-        // simple AABB checking
-        if (rocket.x < ship.x + ship.width && 
-            rocket.x + rocket.width > ship.x && 
-            rocket.y < ship.y + ship.height &&
-            rocket.height + rocket.y > ship. y) {
-            return true;
+
+    generateRandomClues(numClues) {
+        const clues = [];
+        for (let i = 0; i < numClues; i++) {
+            const randomX = Phaser.Math.Between(50, this.sys.game.config.width - 50);
+            const randomY = Phaser.Math.Between(50, this.sys.game.config.height - 50);
+            const clue = this.add.rectangle(randomX, randomY, 30, 30, Phaser.Display.Color.RandomRGB().color);
+            clues.push(clue);
         }
-        else {
-            return false;
-        }
+        return clues;
     }
-    shipExplode(ship) {
-        // temporarily hide ship
-        ship.alpha = 0;
-        // create explosion sprite at ship's position
-        let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
-        boom.anims.play('explode');             // play explode animation
-        boom.on('animationcomplete', () => {    // callback after anim completes
-          ship.reset();                         // reset ship position
-          ship.alpha = 1;                       // make ship visible again
-          boom.destroy();                       // remove explosion sprite
-        });    
-        // score add and repaint
-        this.p1Score += ship.points;
-        this.scoreLeft.text = this.p1Score;     
-        this.sound.play('sfx_explosion'); 
+
+    startTimer() {
+        // Clear any existing timer events to avoid duplicates
+        if (this.timerEvent) {
+            this.timerEvent.remove();
+        }
+
+        // Create a new timer event
+        this.timerEvent = this.time.addEvent({
+            delay: 1000, // Decrease time every second
+            callback: () => {
+                this.timeLeft--;
+                this.timerText.setText(`Time: ${this.timeLeft}`);
+                if (this.timeLeft <= 0) {
+                    this.endGame(false); // Lose condition if time runs out
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    update() {
+        // Check for intersections with a reduced scanner range
+        this.clues.forEach(clue => {
+            const reducedBounds = this.scanner.getBounds();
+            const reducedRange = 0.5;
+            reducedBounds.width *= reducedRange;
+            reducedBounds.height *= reducedRange;
+            reducedBounds.centerX = this.scanner.x;
+            reducedBounds.centerY = this.scanner.y;
+
+            if (Phaser.Geom.Intersects.RectangleToRectangle(reducedBounds, clue.getBounds())) {
+                if (!clue.visible) {
+                    this.score += 10; // Increase score when a clue is found
+                    this.scoreText.setText(`Score: ${this.score}`);
+                    clue.setVisible(true);
+
+                    // Win condition: all clues found
+                    if (this.clues.every(c => c.visible)) {
+                        this.endGame(true);
+                    }
+                }
+            }
+        });
+    }
+
+    endGame(win) {
+        // Stop the timer
+        if (this.timerEvent) {
+            this.timerEvent.remove();
+        }
+
+        // Determine the message based on the game outcome
+        const message = win ? 'You Win!' : 'Game Over';
+
+        // Display the win/lose message with a larger font size and black color
+        this.add.bitmapText(
+            this.sys.game.config.width / 2, 
+            this.sys.game.config.height / 2, 
+            "pixel_square", 
+            message, 
+            50 // Larger font size
+        ).setOrigin(0.5).setTint(0x000000); // Set color to black
+
+        // Display the restart instruction
+        this.add.bitmapText(
+            this.sys.game.config.width / 2, 
+            this.sys.game.config.height / 2 + 60, 
+            "pixel_square", 
+            'Press R to Restart', 
+            30 // Font size for the restart message
+        ).setOrigin(0.5).setTint(0x000000); // Set color to black
+
+        // Add keyboard input to restart the game when "R" is pressed
+        this.input.keyboard.once('keydown-R', () => {
+            this.scene.restart();
+        });
+
+        // Stop player interaction
+        this.input.off('drag');
     }
 }
