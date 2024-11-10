@@ -2,10 +2,16 @@ let config = {
     type: Phaser.CANVAS, 
     width: 715, 
     height: 537,
-    // add in Menu scene later if needed
+    // Add in Menu scene later if needed
     scene: [Title, Play],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false // Set to true if you want to see physics boundaries for debugging
+        }
+    },
     audio: {
-        disableWebAudio: true // disable Web Audio to avoid autoplay issues
+        disableWebAudio: true // Disable Web Audio to avoid autoplay issues
     },
     fps: {forceSetTimeOut: true, target: 60},
 }

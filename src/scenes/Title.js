@@ -15,9 +15,9 @@ class Title extends Phaser.Scene {
         this.add.bitmapText(game.config.width / 2, game.config.height / 2 - 120, "pixel_square", 
             "Detective Puzzle", 30).setOrigin(0.5);
 
-        // Add instructions for using the mouse
+        // Add instructions for using the mouse / what to do
         this.add.bitmapText(game.config.width / 2, (game.config.height / 2) - 40, "pixel_square",
-        "Use mouse to scroll and hover over objects", 20).setOrigin(0.5);
+        "Use mouse to explore with the magnifying glass", 20).setOrigin(0.5);
 
         // Add instructions for starting the game
         this.add.bitmapText(game.config.width / 2, game.config.height / 2, "pixel_square",
