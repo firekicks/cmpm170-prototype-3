@@ -4,9 +4,17 @@ class Play extends Phaser.Scene {
     }
     
     preload() {
+        this.load.setPath("./assets/");
+        
         // Load background and scanner images
-        this.load.image('background', './assets/background.jpg');
-        this.load.image('scanner', './assets/scanner.png');
+        this.load.image('background', 'background.jpg');
+        this.load.image('scanner', 'scanner.png');
+        this.load.image('balaclava', 'balaclava.png');
+        this.load.image('bloody_knife', 'bloody_knife.png');
+        this.load.image('bloody_napkin', 'bloody_napkin.png');
+        this.load.image('case', 'case.png');
+        this.load.image('key', 'key.png');
+        this.load.image('termination_notice', 'termination_notice.png');
     }
 
     create() {
@@ -42,10 +50,11 @@ class Play extends Phaser.Scene {
 
     generateRandomClues(numClues) {
         const clues = [];
+        let imgArr = ["balaclava", "bloody_knife", "bloody_napkin", "case", "key", "termination_notice"];
         for (let i = 0; i < numClues; i++) {
             const randomX = Phaser.Math.Between(50, this.sys.game.config.width - 50);
             const randomY = Phaser.Math.Between(50, this.sys.game.config.height - 50);
-            const clue = this.add.rectangle(randomX, randomY, 30, 30, Phaser.Display.Color.RandomRGB().color);
+            const clue = this.add.image(randomX, randomY, imgArr[Math.floor(Math.random()* imgArr.length)]).setScale(0.2);
             clues.push(clue);
         }
         return clues;
