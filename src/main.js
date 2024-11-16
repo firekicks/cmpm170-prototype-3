@@ -2,8 +2,7 @@ let config = {
     type: Phaser.CANVAS, 
     width: 715, 
     height: 537,
-    // Add in Menu scene later if needed
-    scene: [Title, Play],
+    scene: [Title, Menu, Play],
     physics: {
         default: 'arcade',
         arcade: {
@@ -22,4 +21,3 @@ let game = new Phaser.Game(config);
 let borderUISize = game.config.height / 15;
 let borderPadding = borderUISize / 3;
 
-// Set keyboard variables
