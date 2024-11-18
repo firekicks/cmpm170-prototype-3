@@ -19,16 +19,6 @@ class Menu extends Phaser.Scene {
     // Add game instructions
     const instructions = [
       "Objective: Find 3 hidden items to win.",
-      "Use the magnifying glass to scan the room.",
-      "Score +10 for each item found.",
-      "Items are shuffled each time you play.",
-      "Win by finding all items before time/energy runs out.",
-      "As energy depletes, the background darkens and the scanner shrinks.",
-      "",
-      "Lose Conditions:",
-      "- Timer reaches 0.",
-      "- Energy depletes completely.",
-      "",
       "Controls:",
       "Use mouse to move the magnifying glass.",
       "Press 'R' to restart after winning or losing."

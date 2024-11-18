@@ -1,7 +1,7 @@
 class Play extends Phaser.Scene {
     constructor() {
         super("playScene");
-        this.maxEnergy = 150; // Maximum energy
+        this.maxEnergy = 100; // Maximum energy
         this.energy = this.maxEnergy; // Current energy
         this.energyRegenRate = 1; // Energy regenerated per second
         this.energyDepleteRate = 20; // Energy depleted per second during use
